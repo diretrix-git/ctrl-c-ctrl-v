@@ -31,9 +31,11 @@ app.prepare().then(() => {
 
   io.on("connection", (socket) => {
     let currentRoom = null;
+    let currentUsername = null;
 
     socket.on("join_room", ({ code, username }) => {
       currentRoom = code;
+      currentUsername = username;
 
       socket.join(code);
       const room = getRoom(code);
@@ -42,8 +44,9 @@ app.prepare().then(() => {
       // Send existing posts to the new joiner
       socket.emit("room_history", room.posts);
 
-      // Broadcast updated user count
+      // Broadcast updated user count + join event
       io.to(code).emit("room_user_count", room.users.size);
+      socket.to(code).emit("user_joined", { username });
     });
 
     socket.on("post_snippet", ({ code, content, language, type, username }) => {
@@ -79,13 +82,16 @@ app.prepare().then(() => {
         if (room) {
           room.users.delete(socket.id);
           io.to(currentRoom).emit("room_user_count", room.users.size);
-          // Clean up empty rooms
+          if (currentUsername) {
+            socket.to(currentRoom).emit("user_left", { username: currentUsername });
+          }
           if (room.users.size === 0) {
             rooms.delete(currentRoom);
           }
         }
         socket.leave(currentRoom);
         currentRoom = null;
+        currentUsername = null;
       }
     }
   });

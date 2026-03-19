@@ -51,3 +51,31 @@ body {
   font-size: 0.875rem;
   line-height: 1.6;
 }
+
+/* Line numbers */
+.code-with-lines {
+  display: flex;
+  gap: 1rem;
+}
+
+.line-numbers {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  user-select: none;
+  color: #3d3d5c;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  min-width: 1.5rem;
+  padding-top: 0;
+}
+
+.line-numbers .ln {
+  display: block;
+}
+
+.code-content {
+  flex: 1;
+  min-width: 0;
+}

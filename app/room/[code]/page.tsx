@@ -8,47 +8,51 @@ import { Post, Language } from "@/types";
 import RoomHeader from "@/components/RoomHeader";
 import PostCard from "@/components/PostCard";
 import InputPanel from "@/components/InputPanel";
-
-// Generate a random guest username
-function guestName() {
-  const adj = ["Swift", "Quiet", "Bold", "Sharp", "Calm", "Bright"];
-  const noun = ["Fox", "Owl", "Dev", "Coder", "Hawk", "Wolf"];
-  return (
-    adj[Math.floor(Math.random() * adj.length)] +
-    noun[Math.floor(Math.random() * noun.length)] +
-    Math.floor(Math.random() * 90 + 10)
-  );
-}
+import UsernameModal from "@/components/UsernameModal";
+import Toast, { ToastMessage } from "@/components/Toast";
 
 export default function RoomPage({ params }: { params: Promise<{ code: string }> }) {
   const resolvedParams = use(params);
   const code = resolvedParams.code.toUpperCase();
 
-  const { posts, userCount, username, setPosts, addPost, setUserCount, setUsername } =
+  const { posts, userCount, username, theme, setPosts, addPost, setUserCount, setUsername } =
     useRoomStore();
 
   const [highlightCache, setHighlightCache] = useState<Record<string, string>>({});
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const feedRef = useRef<HTMLDivElement>(null);
   const joinedRef = useRef(false);
 
-  // Highlight a post and cache it
+  function addToast(text: string, type: ToastMessage["type"]) {
+    const id = Math.random().toString(36).slice(2);
+    setToasts((prev) => [...prev.slice(-4), { id, text, type }]);
+  }
+
+  function removeToast(id: string) {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }
+
   const highlight = useCallback(
-    async (post: Post) => {
-      if (post.type !== "code" || !post.language || highlightCache[post.id]) return;
+    async (post: Post, currentTheme: string) => {
+      if (post.type !== "code" || !post.language) return;
+      const cacheKey = `${post.id}__${currentTheme}`;
+      if (highlightCache[cacheKey]) return;
       try {
         const html = await codeToHtml(post.content, {
           lang: post.language,
-          theme: "vitesse-dark",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          theme: currentTheme as any,
         });
-        setHighlightCache((prev) => ({ ...prev, [post.id]: html }));
+        setHighlightCache((prev) => ({ ...prev, [cacheKey]: html }));
       } catch {
-        // fallback: leave as plain text
+        // fallback: plain text
       }
     },
     [highlightCache]
   );
 
-  // Scroll feed to bottom
   function scrollToBottom() {
     setTimeout(() => {
       if (feedRef.current) {
@@ -57,26 +61,25 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
     }, 50);
   }
 
-  useEffect(() => {
+  function joinRoom(name: string) {
+    setUsername(name);
+    setShowModal(false);
+
     if (joinedRef.current) return;
     joinedRef.current = true;
 
-    const name = guestName();
-    setUsername(name);
-
     const socket = getSocket();
-
     socket.emit("join_room", { code, username: name });
 
     socket.on("room_history", (history: Post[]) => {
       setPosts(history);
-      history.forEach(highlight);
+      history.forEach((p) => highlight(p, theme));
       scrollToBottom();
     });
 
     socket.on("receive_snippet", (post: Post) => {
       addPost(post);
-      highlight(post);
+      highlight(post, theme);
       scrollToBottom();
     });
 
@@ -84,63 +87,82 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
       setUserCount(count);
     });
 
+    socket.on("user_joined", ({ username: who }: { username: string }) => {
+      addToast(`${who} joined`, "join");
+    });
+
+    socket.on("user_left", ({ username: who }: { username: string }) => {
+      addToast(`${who} left`, "leave");
+    });
+  }
+
+  useEffect(() => {
+    setMounted(true);
+    setShowModal(true);
+  }, []);
+
+  useEffect(() => {
     return () => {
+      const socket = getSocket();
       socket.emit("leave_room");
       socket.off("room_history");
       socket.off("receive_snippet");
       socket.off("room_user_count");
+      socket.off("user_joined");
+      socket.off("user_left");
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [code]);
+  }, []);
 
-  // Highlight newly added posts
+  // Re-highlight when theme changes
   useEffect(() => {
-    posts.forEach((p) => {
-      if (p.type === "code" && p.language && !highlightCache[p.id]) {
-        highlight(p);
-      }
-    });
-  }, [posts, highlight, highlightCache]);
+    posts.forEach((p) => highlight(p, theme));
+  }, [theme, posts, highlight]);
 
   function handleSend(content: string, type: "code" | "text", language: Language | null) {
     const socket = getSocket();
-    socket.emit("post_snippet", {
-      code,
-      content,
-      language,
-      type,
-      username,
-    });
+    socket.emit("post_snippet", { code, content, language, type, username });
+  }
+
+  // Get highlight for current theme
+  function getHtml(postId: string) {
+    return highlightCache[`${postId}__${theme}`] ?? null;
   }
 
   return (
-    <div className="flex flex-col h-screen" style={{ background: "#0a0a0f" }}>
-      <RoomHeader code={code} userCount={userCount} />
+    <>
+      {mounted && showModal && <UsernameModal roomCode={code} onConfirm={joinRoom} />}
 
-      {/* Feed */}
-      <div
-        ref={feedRef}
-        className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-3"
-      >
-        {posts.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <p className="text-slate-500 text-lg mb-2">Room is empty</p>
-            <p className="text-slate-600 text-sm">
-              Share the code <span className="font-mono text-indigo-500">{code}</span> and start posting.
-            </p>
-          </div>
-        )}
+      <div className="flex flex-col h-screen" style={{ background: "#0a0a0f" }}>
+        <RoomHeader code={code} userCount={userCount} />
 
-        {posts.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            highlightedHtml={highlightCache[post.id] ?? null}
-          />
-        ))}
+        {/* Feed */}
+        <div
+          ref={feedRef}
+          className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-3"
+        >
+          {posts.length === 0 && !showModal && (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <p className="text-slate-500 text-lg mb-2">Room is empty</p>
+              <p className="text-slate-600 text-sm">
+                Share the code{" "}
+                <span className="font-mono text-indigo-500">{code}</span> and start posting.
+              </p>
+            </div>
+          )}
+
+          {posts.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              highlightedHtml={getHtml(post.id)}
+            />
+          ))}
+        </div>
+
+        <InputPanel onSend={handleSend} />
       </div>
 
-      <InputPanel onSend={handleSend} />
-    </div>
+      <Toast toasts={toasts} onRemove={removeToast} />
+    </>
   );
 }
