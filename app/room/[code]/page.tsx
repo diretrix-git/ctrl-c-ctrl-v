@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useCallback, use } from "react";
 import { codeToHtml } from "shiki";
 import { getSocket } from "@/lib/socket";
 import { useRoomStore } from "@/lib/store";
@@ -21,10 +20,9 @@ function guestName() {
   );
 }
 
-export default function RoomPage() {
-  const params = useParams();
-  const router = useRouter();
-  const code = (params.code as string).toUpperCase();
+export default function RoomPage({ params }: { params: Promise<{ code: string }> }) {
+  const resolvedParams = use(params);
+  const code = resolvedParams.code.toUpperCase();
 
   const { posts, userCount, username, setPosts, addPost, setUserCount, setUsername } =
     useRoomStore();
