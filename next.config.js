@@ -1,7 +1,4 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  // Required to allow custom server.js
-  experimental: {},
-};
+const nextConfig = {};
 
 module.exports = nextConfig;
