@@ -31,11 +31,9 @@ app.prepare().then(() => {
 
   io.on("connection", (socket) => {
     let currentRoom = null;
-    let currentUser = null;
 
     socket.on("join_room", ({ code, username }) => {
       currentRoom = code;
-      currentUser = username;
 
       socket.join(code);
       const room = getRoom(code);
