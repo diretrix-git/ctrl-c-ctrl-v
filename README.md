@@ -11,13 +11,15 @@ Real-time code and text sharing. No accounts. No database. Just a room code.
 - Create or join a room with a 6-character code
 - Post code (with syntax highlighting) or plain text — live for everyone in the room
 - One-click copy on every post — raw text, no formatting noise
-- Username picker on join with avatar initials
+- Username picker on join with avatar initials — persists across refreshes
+- Online users panel — see who's currently in the room
 - Share room link — copies the full URL to clipboard
 - Syntax theme switcher — Vitesse, GitHub, Dracula, Nord, One Dark
 - Line numbers on multi-line code blocks
 - Compact mode for a denser feed
 - Join/leave toast notifications
 - Keyboard shortcut: `Ctrl+Enter` to send
+- Friendly error state for invalid or expired room codes
 - Fully mobile responsive
 - No sign up, no persistence — posts vanish when the room empties
 
@@ -45,22 +47,31 @@ Real-time code and text sharing. No accounts. No database. Just a room code.
 ├── server.js               # Custom Node server — Next.js + Socket.io on one port
 ├── nixpacks.toml           # Railway build config
 ├── app/
-│   ├── layout.tsx
+│   ├── layout.tsx          # Root layout with metadata and Google Analytics
 │   ├── page.tsx            # Landing page
 │   ├── globals.css
 │   ├── not-found.tsx
+│   ├── opengraph-image.tsx # Auto-generated OG image (1200×630)
+│   ├── sitemap.ts          # Auto-generated sitemap.xml
+│   ├── robots.ts           # Auto-generated robots.txt
 │   └── room/[code]/
 │       └── page.tsx        # Room page
 ├── components/
-│   ├── RoomHeader.tsx      # Header with code, share, theme, compact toggle
+│   ├── RoomHeader.tsx      # Header with code, share, theme, compact toggle, users
 │   ├── PostCard.tsx        # Individual post with copy button
 │   ├── InputPanel.tsx      # Code/text input with language selector
 │   ├── UsernameModal.tsx   # Name picker shown on room join
-│   └── Toast.tsx           # Join/leave notifications
+│   ├── Toast.tsx           # Join/leave notifications
+│   └── GoogleAnalytics.tsx # GA4 script loader
 ├── lib/
 │   ├── socket.ts           # Socket.io client singleton
 │   ├── store.ts            # Zustand store
 │   └── utils.ts
+├── public/
+│   ├── favicon.svg
+│   ├── manifest.json
+│   ├── robots.txt
+│   └── sitemap.xml
 └── types/
     └── index.ts
 ```
@@ -107,10 +118,12 @@ git push -u origin main
 
 In Railway dashboard → your service → **Variables**:
 
-| Key | Value |
-|---|---|
-| `NODE_ENV` | `production` |
-| `NEXT_PUBLIC_SOCKET_URL` | `https://your-app.up.railway.app` |
+| Key | Value | Required |
+|---|---|---|
+| `NODE_ENV` | `production` | Yes |
+| `NEXT_PUBLIC_SOCKET_URL` | `https://your-app.up.railway.app` | Yes |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | `G-XXXXXXXXXX` | Optional — Google Analytics |
+| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | your Search Console token | Optional — SEO |
 
 > `PORT` is injected automatically by Railway — do not set it manually.
 
@@ -126,9 +139,11 @@ Your app is live.
 
 - `server.js` boots Next.js and Socket.io on the same HTTP server and port
 - Rooms are in-memory only — no database, max 50 posts per room
+- Joining a code that doesn't exist shows a "Room not found" error — no ghost rooms are created
 - When the last user leaves, the room and all its posts are deleted
 - Shiki highlights code client-side, cached per post ID + theme so switching themes re-highlights instantly
-- Socket events: `join_room` `leave_room` `post_snippet` `receive_snippet` `room_user_count` `user_joined` `user_left`
+- Usernames are saved in `localStorage` so returning users skip the name picker
+- Socket events: `join_room` `leave_room` `post_snippet` `receive_snippet` `room_user_count` `room_users` `room_not_found` `user_joined` `user_left`
 
 ## License
 
