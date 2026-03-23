@@ -37,7 +37,7 @@ app.prepare().then(() => {
     let currentRoom = null;
     let currentUsername = null;
 
-    socket.on("join_room", ({ code, username }) => {
+    socket.on("join_room", ({ code, username, create }) => {
       const isNew = !roomExists(code);
 
       currentRoom = code;
@@ -47,8 +47,8 @@ app.prepare().then(() => {
       const room = getRoom(code);
       room.users.set(socket.id, username);
 
-      // If this is a brand-new room with no history, tell the joiner
-      if (isNew && room.posts.length === 0) {
+      // Only flag not-found when joining (not creating) a room that has no history
+      if (!create && isNew && room.posts.length === 0) {
         socket.emit("room_not_found");
       }
 

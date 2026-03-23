@@ -79,7 +79,7 @@ export default function LandingPage() {
 
   function createRoom() {
     const code = nanoid();
-    router.push(`/room/${code}`);
+    router.push(`/room/${code}?new=1`);
   }
 
   function joinRoom() {

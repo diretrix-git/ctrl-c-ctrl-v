@@ -14,9 +14,11 @@ import InputPanel from "@/components/InputPanel";
 import UsernameModal from "@/components/UsernameModal";
 import Toast, { ToastMessage } from "@/components/Toast";
 
-export default function RoomPage({ params }: { params: Promise<{ code: string }> }) {
+export default function RoomPage({ params, searchParams }: { params: Promise<{ code: string }>; searchParams: Promise<{ new?: string }> }) {
   const resolvedParams = use(params);
+  const resolvedSearch = use(searchParams);
   const code = resolvedParams.code.toUpperCase();
+  const isCreating = resolvedSearch.new === "1";
 
   const { posts, userCount, username, theme, setPosts, addPost, setUserCount, setUsername, setOnlineUsers } =
     useRoomStore();
@@ -32,7 +34,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
   const feedRef = useRef<HTMLDivElement>(null);
 
   function createNewRoom() {
-    router.push(`/room/${nanoid()}`);
+    router.push(`/room/${nanoid()}?new=1`);
   }
   const joinedRef = useRef(false);
 
@@ -81,7 +83,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
     joinedRef.current = true;
 
     const socket = getSocket();
-    socket.emit("join_room", { code, username: name });
+    socket.emit("join_room", { code, username: name, create: isCreating });
 
     socket.on("room_history", (history: Post[]) => {
       setPosts(history);
@@ -234,7 +236,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
           ))}
         </div>
 
-        <InputPanel onSend={handleSend} />
+        {!roomNotFound && <InputPanel onSend={handleSend} />}
       </motion.div>
 
       <Toast toasts={toasts} onRemove={removeToast} />
