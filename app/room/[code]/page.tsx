@@ -164,12 +164,29 @@ export default function RoomPage({ params, searchParams }: { params: Promise<{ c
     <>
       {mounted && showModal && <UsernameModal roomCode={code} onConfirm={joinRoom} />}
 
+      {/* Loading state — shown until server responds */}
+      {!roomReady && !showModal && (
+        <div className="flex items-center justify-center h-screen" style={{ background: "#0a0a0f" }}>
+          <div className="flex gap-1.5">
+            {[0, 1, 2].map((i) => (
+              <motion.span
+                key={i}
+                className="w-2 h-2 rounded-full"
+                style={{ background: "#6366f1" }}
+                animate={{ opacity: [0.3, 1, 0.3] }}
+                transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: roomReady || !showModal ? 1 : 0, y: roomReady || !showModal ? 0 : 10 }}
-        transition={{ duration: 0.35, ease: "easeOut" }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: roomReady ? 1 : 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
         className="flex flex-col h-screen"
-        style={{ background: "#0a0a0f" }}
+        style={{ background: "#0a0a0f", pointerEvents: roomReady ? "auto" : "none" }}
       >
         <RoomHeader code={code} userCount={userCount} />
 
@@ -209,8 +226,8 @@ export default function RoomPage({ params, searchParams }: { params: Promise<{ c
                   Create a new room
                 </motion.button>
               </motion.div>
-            ) : roomReady && posts.length === 0 && !showModal ? (
-              /* Empty room — only shown once server confirmed room is valid */
+            ) : posts.length === 0 ? (
+              /* Empty room — server confirmed it's valid */
               <motion.div
                 key="empty"
                 initial={{ opacity: 0 }}
