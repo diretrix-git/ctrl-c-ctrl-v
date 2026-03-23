@@ -15,7 +15,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
   const resolvedParams = use(params);
   const code = resolvedParams.code.toUpperCase();
 
-  const { posts, userCount, username, theme, setPosts, addPost, setUserCount, setUsername } =
+  const { posts, userCount, username, theme, setPosts, addPost, setUserCount, setUsername, setOnlineUsers } =
     useRoomStore();
 
   const [highlightCache, setHighlightCache] = useState<Record<string, string>>({});
@@ -88,6 +88,10 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
       setUserCount(count);
     });
 
+    socket.on("room_users", (users: string[]) => {
+      setOnlineUsers(users);
+    });
+
     socket.on("user_joined", ({ username: who }: { username: string }) => {
       addToast(`${who} joined`, "join");
     });
@@ -115,6 +119,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
       socket.off("room_history");
       socket.off("receive_snippet");
       socket.off("room_user_count");
+      socket.off("room_users");
       socket.off("user_joined");
       socket.off("user_left");
     };

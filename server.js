@@ -44,8 +44,10 @@ app.prepare().then(() => {
       // Send existing posts to the new joiner
       socket.emit("room_history", room.posts);
 
-      // Broadcast updated user count + join event
+      // Broadcast updated user count + user list + join event
+      const userList = Array.from(room.users.values());
       io.to(code).emit("room_user_count", room.users.size);
+      io.to(code).emit("room_users", userList);
       socket.to(code).emit("user_joined", { username });
     });
 
@@ -81,7 +83,9 @@ app.prepare().then(() => {
         const room = rooms.get(currentRoom);
         if (room) {
           room.users.delete(socket.id);
+          const userList = Array.from(room.users.values());
           io.to(currentRoom).emit("room_user_count", room.users.size);
+          io.to(currentRoom).emit("room_users", userList);
           if (currentUsername) {
             socket.to(currentRoom).emit("user_left", { username: currentUsername });
           }

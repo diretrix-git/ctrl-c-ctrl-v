@@ -10,11 +10,19 @@ interface Props {
   userCount: number;
 }
 
+function avatarColor(name: string) {
+  const colors = ["#6366f1","#8b5cf6","#ec4899","#f59e0b","#10b981","#3b82f6","#ef4444","#14b8a6"];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length];
+}
+
 export default function RoomHeader({ code, userCount }: Props) {
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [showTheme, setShowTheme] = useState(false);
-  const { theme, setTheme, compactMode, setCompactMode } = useRoomStore();
+  const [showUsers, setShowUsers] = useState(false);
+  const { theme, setTheme, compactMode, setCompactMode, onlineUsers } = useRoomStore();
 
   function copyCode() {
     navigator.clipboard.writeText(code).then(() => setCopiedCode(true));
@@ -37,13 +45,19 @@ export default function RoomHeader({ code, userCount }: Props) {
     return () => clearTimeout(t);
   }, [copiedLink]);
 
-  // Close theme picker on outside click
   useEffect(() => {
     if (!showTheme) return;
     const handler = () => setShowTheme(false);
     setTimeout(() => document.addEventListener("click", handler), 0);
     return () => document.removeEventListener("click", handler);
   }, [showTheme]);
+
+  useEffect(() => {
+    if (!showUsers) return;
+    const handler = () => setShowUsers(false);
+    setTimeout(() => document.addEventListener("click", handler), 0);
+    return () => document.removeEventListener("click", handler);
+  }, [showUsers]);
 
   return (
     <header
@@ -146,13 +160,44 @@ export default function RoomHeader({ code, userCount }: Props) {
           {compactMode ? <LayoutList size={14} /> : <AlignJustify size={14} />}
         </button>
 
-        {/* User count */}
-        <div
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg"
-          style={{ background: "#1e1e2e", border: "1px solid #2d2d3d" }}
-        >
-          <Users size={14} className="text-slate-400" />
-          <span className="text-sm font-medium text-slate-300">{userCount}</span>
+        {/* Online users */}
+        <div className="relative">
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowUsers((v) => !v); }}
+            title="Online users"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
+            style={{
+              background: showUsers ? "#6366f122" : "#1e1e2e",
+              border: `1px solid ${showUsers ? "#6366f1" : "#2d2d3d"}`,
+            }}
+          >
+            <Users size={14} className="text-slate-400" />
+            <span className="text-sm font-medium text-slate-300">{userCount}</span>
+          </button>
+
+          {showUsers && onlineUsers.length > 0 && (
+            <div
+              className="absolute right-0 top-full mt-1 rounded-xl shadow-xl z-20 py-1"
+              style={{ background: "#111118", border: "1px solid #2d2d3d", minWidth: "180px" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className="px-4 py-2 text-xs text-slate-500 font-medium uppercase tracking-wider border-b" style={{ borderColor: "#2d2d3d" }}>
+                Online — {onlineUsers.length}
+              </p>
+              {onlineUsers.map((user) => (
+                <div key={user} className="flex items-center gap-3 px-4 py-2.5 hover:bg-indigo-500/5 transition-colors">
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+                    style={{ background: avatarColor(user) }}
+                  >
+                    {user.slice(0, 2).toUpperCase()}
+                  </div>
+                  <span className="text-sm text-slate-300 truncate">{user}</span>
+                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </header>

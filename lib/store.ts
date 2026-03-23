@@ -17,12 +17,14 @@ interface RoomStore {
   username: string;
   theme: ShikiTheme;
   compactMode: boolean;
+  onlineUsers: string[];
   setPosts: (posts: Post[]) => void;
   addPost: (post: Post) => void;
   setUserCount: (count: number) => void;
   setUsername: (name: string) => void;
   setTheme: (theme: ShikiTheme) => void;
   setCompactMode: (compact: boolean) => void;
+  setOnlineUsers: (users: string[]) => void;
 }
 
 export const useRoomStore = create<RoomStore>((set) => ({
@@ -31,10 +33,12 @@ export const useRoomStore = create<RoomStore>((set) => ({
   username: "",
   theme: "vitesse-dark",
   compactMode: false,
+  onlineUsers: [],
   setPosts: (posts) => set({ posts }),
   addPost: (post) => set((state) => ({ posts: [...state.posts, post] })),
   setUserCount: (userCount) => set({ userCount }),
   setUsername: (username) => set({ username }),
   setTheme: (theme) => set({ theme }),
   setCompactMode: (compactMode) => set({ compactMode }),
+  setOnlineUsers: (onlineUsers) => set({ onlineUsers }),
 }));
