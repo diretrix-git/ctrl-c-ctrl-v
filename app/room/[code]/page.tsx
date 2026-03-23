@@ -209,13 +209,13 @@ export default function RoomPage({ params, searchParams }: { params: Promise<{ c
                   Create a new room
                 </motion.button>
               </motion.div>
-            ) : posts.length === 0 && !showModal ? (
-              /* Empty room (you created it) */
+            ) : roomReady && posts.length === 0 && !showModal ? (
+              /* Empty room — only shown once server confirmed room is valid */
               <motion.div
                 key="empty"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
+                transition={{ delay: 0.1 }}
                 className="flex flex-col items-center justify-center h-full text-center"
               >
                 <p className="text-slate-400 text-lg mb-2">Room is empty</p>
