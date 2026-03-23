@@ -64,6 +64,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
   function joinRoom(name: string) {
     setUsername(name);
     setShowModal(false);
+    sessionStorage.setItem("codeshare_username", name);
 
     if (joinedRef.current) return;
     joinedRef.current = true;
@@ -98,7 +99,13 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
 
   useEffect(() => {
     setMounted(true);
-    setShowModal(true);
+    const saved = sessionStorage.getItem("codeshare_username");
+    if (saved) {
+      joinRoom(saved);
+    } else {
+      setShowModal(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
