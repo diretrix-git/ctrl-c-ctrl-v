@@ -5,6 +5,30 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { customAlphabet } from "nanoid";
 import { Zap } from "lucide-react";
+import Script from "next/script";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "ctrl-c-ctrl-v",
+  url: "https://ctrl-c-ctrl-v.up.railway.app",
+  description:
+    "Real-time code and text sharing. Create a room, post snippets, everyone sees it live. No sign up required.",
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Any",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
+  featureList: [
+    "Real-time code sharing",
+    "Syntax highlighting",
+    "No sign up required",
+    "One-click copy",
+    "Multiple syntax themes",
+  ],
+};
 
 const nanoid = customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", 6);
 
@@ -29,8 +53,14 @@ export default function LandingPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-4"
-      style={{ background: "#0a0a0f" }}>
+    <>
+      <Script
+        id="json-ld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <main className="min-h-screen flex flex-col items-center justify-center px-4"
+        style={{ background: "#0a0a0f" }}>
 
       {/* Logo */}
       <motion.div
@@ -129,5 +159,6 @@ export default function LandingPage() {
         No sign up. No data stored. Posts vanish when the room empties.
       </motion.p>
     </main>
+    </>
   );
 }
