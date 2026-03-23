@@ -19,6 +19,10 @@ function getRoom(code) {
   return rooms.get(code);
 }
 
+function roomExists(code) {
+  return rooms.has(code) && rooms.get(code).users.size > 0;
+}
+
 app.prepare().then(() => {
   const httpServer = createServer((req, res) => {
     const parsedUrl = parse(req.url, true);
@@ -34,12 +38,19 @@ app.prepare().then(() => {
     let currentUsername = null;
 
     socket.on("join_room", ({ code, username }) => {
+      const isNew = !roomExists(code);
+
       currentRoom = code;
       currentUsername = username;
 
       socket.join(code);
       const room = getRoom(code);
       room.users.set(socket.id, username);
+
+      // If this is a brand-new room with no history, tell the joiner
+      if (isNew && room.posts.length === 0) {
+        socket.emit("room_not_found");
+      }
 
       // Send existing posts to the new joiner
       socket.emit("room_history", room.posts);

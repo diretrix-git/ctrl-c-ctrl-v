@@ -162,7 +162,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.55 }}
-            className="text-slate-400 text-center text-lg mb-10 max-w-md"
+            className="text-slate-300 text-center text-lg mb-10 max-w-md"
           >
             No sign up. No data stored. Rooms vanish when empty.
           </motion.p>
@@ -281,7 +281,7 @@ export default function LandingPage() {
                     </div>
                     <span className="font-semibold text-white text-sm">{title}</span>
                   </div>
-                  <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
+                  <p className="text-slate-400 text-sm leading-relaxed">{desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -291,7 +291,7 @@ export default function LandingPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="text-slate-600 text-sm mt-12"
+            className="text-slate-500 text-sm mt-12"
           >
             No sign up. No data stored. Posts vanish when the room empties.
           </motion.p>

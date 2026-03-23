@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback, use } from "react";
 import { codeToHtml } from "shiki";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { customAlphabet } from "nanoid";
 import { getSocket } from "@/lib/socket";
 import { useRoomStore } from "@/lib/store";
 import { Post, Language } from "@/types";
@@ -25,7 +26,14 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
   const [showModal, setShowModal] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [roomReady, setRoomReady] = useState(false);
+  const [roomNotFound, setRoomNotFound] = useState(false);
+  const router = useRouter();
+  const nanoid = customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", 6);
   const feedRef = useRef<HTMLDivElement>(null);
+
+  function createNewRoom() {
+    router.push(`/room/${nanoid()}`);
+  }
   const joinedRef = useRef(false);
 
   function addToast(text: string, type: ToastMessage["type"]) {
@@ -82,6 +90,11 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
       setRoomReady(true);
     });
 
+    socket.on("room_not_found", () => {
+      setRoomNotFound(true);
+      setRoomReady(true);
+    });
+
     socket.on("receive_snippet", (post: Post) => {
       addPost(post);
       highlight(post, theme);
@@ -124,6 +137,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
       socket.off("receive_snippet");
       socket.off("room_user_count");
       socket.off("room_users");
+      socket.off("room_not_found");
       socket.off("user_joined");
       socket.off("user_left");
     };
@@ -162,20 +176,54 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
           ref={feedRef}
           className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-3"
         >
-          {posts.length === 0 && !showModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="flex flex-col items-center justify-center h-full text-center"
-            >
-              <p className="text-slate-500 text-lg mb-2">Room is empty</p>
-              <p className="text-slate-600 text-sm">
-                Share the code{" "}
-                <span className="font-mono text-indigo-500">{code}</span> and start posting.
-              </p>
-            </motion.div>
-          )}
+          <AnimatePresence mode="wait">
+            {roomNotFound ? (
+              /* Room not found error state */
+              <motion.div
+                key="not-found"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col items-center justify-center h-full text-center px-4"
+              >
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
+                  style={{ background: "#1e1e2e" }}
+                >
+                  <span className="text-2xl">🚪</span>
+                </div>
+                <h2 className="text-white font-semibold text-xl mb-2">Room not found</h2>
+                <p className="text-slate-400 text-sm max-w-xs leading-relaxed mb-6">
+                  This room is empty or no longer exists. Rooms vanish when everyone leaves.
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={createNewRoom}
+                  className="px-6 py-3 rounded-xl font-semibold text-white text-sm"
+                  style={{ background: "#6366f1" }}
+                >
+                  Create a new room
+                </motion.button>
+              </motion.div>
+            ) : posts.length === 0 && !showModal ? (
+              /* Empty room (you created it) */
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="flex flex-col items-center justify-center h-full text-center"
+              >
+                <p className="text-slate-400 text-lg mb-2">Room is empty</p>
+                <p className="text-slate-500 text-sm">
+                  Share the code{" "}
+                  <span className="font-mono text-indigo-400">{code}</span> and start posting.
+                </p>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
 
           {posts.map((post) => (
             <PostCard
