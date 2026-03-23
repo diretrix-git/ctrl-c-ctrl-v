@@ -64,7 +64,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
   function joinRoom(name: string) {
     setUsername(name);
     setShowModal(false);
-    sessionStorage.setItem("codeshare_username", name);
+    localStorage.setItem("codeshare_username", name);
 
     if (joinedRef.current) return;
     joinedRef.current = true;
@@ -99,7 +99,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
 
   useEffect(() => {
     setMounted(true);
-    const saved = sessionStorage.getItem("codeshare_username");
+    const saved = localStorage.getItem("codeshare_username");
     if (saved) {
       joinRoom(saved);
     } else {

@@ -23,7 +23,7 @@ export default function UsernameModal({ roomCode, onConfirm }: Props) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const saved = sessionStorage.getItem("codeshare_username");
+    const saved = localStorage.getItem("codeshare_username");
     setName(saved || randomName());
   }, []);
 

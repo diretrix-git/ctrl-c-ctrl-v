@@ -4,6 +4,8 @@ Real-time code and text sharing. No accounts. No database. Just a room code.
 
 > Post a snippet, everyone in the room sees it instantly. Copy it and go.
 
+**Live site:** [ctrl-c-ctrl-v.up.railway.app](https://ctrl-c-ctrl-v.up.railway.app)
+
 ## Features
 
 - Create or join a room with a 6-character code
