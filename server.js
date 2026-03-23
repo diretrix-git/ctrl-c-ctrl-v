@@ -38,19 +38,25 @@ app.prepare().then(() => {
     let currentUsername = null;
 
     socket.on("join_room", ({ code, username, create }) => {
-      const isNew = !roomExists(code);
+      const exists = roomExists(code);
 
       currentRoom = code;
       currentUsername = username;
 
       socket.join(code);
+
+      // Only flag not-found when joining (not creating) a room that doesn't exist yet
+      if (!create && !exists) {
+        socket.emit("room_not_found");
+        // Don't create a persistent room entry — clean up after ourselves
+        socket.leave(code);
+        currentRoom = null;
+        currentUsername = null;
+        return;
+      }
+
       const room = getRoom(code);
       room.users.set(socket.id, username);
-
-      // Only flag not-found when joining (not creating) a room that has no history
-      if (!create && isNew && room.posts.length === 0) {
-        socket.emit("room_not_found");
-      }
 
       // Send existing posts to the new joiner
       socket.emit("room_history", room.posts);
