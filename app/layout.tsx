@@ -10,11 +10,11 @@ const BASE_URL = "https://ctrl-c-ctrl-v.up.railway.app";
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "ctrl-c-ctrl-v — Real-time Code Sharing",
-    template: "%s | ctrl-c-ctrl-v",
+    default: "Real-time Code Sharing — ctrl-c-ctrl-v",
+    template: "%s — ctrl-c-ctrl-v",
   },
   description:
-    "Share code and text instantly with your team. Create a room, post snippets, everyone sees it live. No sign up, no accounts — just a room code.",
+    "Instantly share code or text with anyone in real-time. No login, no accounts. Create a room, paste your code, and everyone sees it live.",
   keywords: [
     "code sharing",
     "real-time code share",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     siteName: "ctrl-c-ctrl-v",
     title: "ctrl-c-ctrl-v — Real-time Code Sharing",
     description:
-      "Share code and text instantly with your team. No sign up. No accounts. Just a room code.",
+      "Instantly share code or text with anyone in real-time. No login required. Rooms vanish when empty.",
     images: [
       {
         url: "/og-image.png",
@@ -60,21 +60,20 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ctrl-c-ctrl-v — Real-time Code Sharing",
     description:
-      "Share code and text instantly with your team. No sign up. No accounts. Just a room code.",
+      "Instantly share code or text with anyone in real-time. No login required.",
     images: ["/og-image.png"],
-    creator: "@ctrlcctrlv",
   },
   alternates: {
     canonical: BASE_URL,
   },
-  // Google Search Console verification
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ?? "",
   },
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/favicon.ico" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],

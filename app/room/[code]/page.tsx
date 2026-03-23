@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, useCallback, use } from "react";
 import { codeToHtml } from "shiki";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { getSocket } from "@/lib/socket";
 import { useRoomStore } from "@/lib/store";
 import { Post, Language } from "@/types";
@@ -22,6 +24,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [roomReady, setRoomReady] = useState(false);
   const feedRef = useRef<HTMLDivElement>(null);
   const joinedRef = useRef(false);
 
@@ -76,6 +79,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
       setPosts(history);
       history.forEach((p) => highlight(p, theme));
       scrollToBottom();
+      setRoomReady(true);
     });
 
     socket.on("receive_snippet", (post: Post) => {
@@ -144,7 +148,13 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
     <>
       {mounted && showModal && <UsernameModal roomCode={code} onConfirm={joinRoom} />}
 
-      <div className="flex flex-col h-screen" style={{ background: "#0a0a0f" }}>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: roomReady || !showModal ? 1 : 0, y: roomReady || !showModal ? 0 : 10 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="flex flex-col h-screen"
+        style={{ background: "#0a0a0f" }}
+      >
         <RoomHeader code={code} userCount={userCount} />
 
         {/* Feed */}
@@ -153,13 +163,18 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
           className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-3"
         >
           {posts.length === 0 && !showModal && (
-            <div className="flex flex-col items-center justify-center h-full text-center">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="flex flex-col items-center justify-center h-full text-center"
+            >
               <p className="text-slate-500 text-lg mb-2">Room is empty</p>
               <p className="text-slate-600 text-sm">
                 Share the code{" "}
                 <span className="font-mono text-indigo-500">{code}</span> and start posting.
               </p>
-            </div>
+            </motion.div>
           )}
 
           {posts.map((post) => (
@@ -172,7 +187,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
         </div>
 
         <InputPanel onSend={handleSend} />
-      </div>
+      </motion.div>
 
       <Toast toasts={toasts} onRemove={removeToast} />
     </>
