@@ -75,7 +75,7 @@ export default function OgImage() {
             fontFamily: "monospace",
           }}
         >
-          ctrl-c-ctrl-v.up.railway.app
+          ctrl-c-ctrl-v.onrender.com
         </div>
       </div>
     ),

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: ctrl-c-ctrl-v
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_SOCKET_URL
+        sync: false   # set this in Render dashboard after first deploy
+      - key: NEXT_PUBLIC_GA_MEASUREMENT_ID
+        sync: false   # optional — Google Analytics
+      - key: NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+        sync: false   # optional — Search Console

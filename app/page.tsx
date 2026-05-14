@@ -12,7 +12,7 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
   name: "ctrl-c-ctrl-v",
-  url: "https://ctrl-c-ctrl-v.up.railway.app",
+  url: "https://ctrl-c-ctrl-v.onrender.com",
   description:
     "Real-time code and text sharing. No login required. Rooms vanish when empty.",
   applicationCategory: "DeveloperApplication",

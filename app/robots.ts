@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 
-const BASE_URL = "https://ctrl-c-ctrl-v.up.railway.app";
+const BASE_URL = "https://ctrl-c-ctrl-v.onrender.com";
 
 export default function robots(): MetadataRoute.Robots {
   return {

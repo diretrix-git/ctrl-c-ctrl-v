@@ -5,7 +5,7 @@ import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
-const BASE_URL = "https://ctrl-c-ctrl-v.up.railway.app";
+const BASE_URL = "https://ctrl-c-ctrl-v.onrender.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),

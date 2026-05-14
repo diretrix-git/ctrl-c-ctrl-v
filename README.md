@@ -4,7 +4,7 @@ Real-time code and text sharing. No accounts. No database. Just a room code.
 
 > Post a snippet, everyone in the room sees it instantly. Copy it and go.
 
-**Live site:** [ctrl-c-ctrl-v.up.railway.app](https://ctrl-c-ctrl-v.up.railway.app)
+**Live site:** [ctrl-c-ctrl-v.onrender.com](https://ctrl-c-ctrl-v.onrender.com)
 
 ## Features
 
@@ -45,7 +45,7 @@ Real-time code and text sharing. No accounts. No database. Just a room code.
 
 ```
 ├── server.js               # Custom Node server — Next.js + Socket.io on one port
-├── nixpacks.toml           # Railway build config
+├── render.yaml             # Render deployment config
 ├── app/
 │   ├── layout.tsx          # Root layout with metadata and Google Analytics
 │   ├── page.tsx            # Landing page
@@ -85,6 +85,8 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
+The `dev` script runs `node server.js` directly — this starts both Next.js and Socket.io on port 3000.
+
 ## Keyboard shortcuts
 
 | Shortcut | Action |
@@ -92,46 +94,48 @@ Open [http://localhost:3000](http://localhost:3000)
 | `Ctrl+Enter` / `Cmd+Enter` | Send post |
 | `Enter` | Confirm username in modal |
 
-## Deploy to Railway
+## Deploy to Render
 
-Railway is the recommended platform — it supports persistent WebSocket connections and long-running Node processes on the free tier.
+Render supports persistent WebSocket connections and long-running Node processes on the free tier.
 
 ### Step 1 — Push to GitHub
 
 ```bash
-git init
 git add .
-git commit -m "init"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
-git push -u origin main
+git commit -m "your message"
+git push origin main
 ```
 
-### Step 2 — Create a Railway project
+### Step 2 — Create a Render Web Service
 
-1. Go to [railway.app](https://railway.app) and sign in with GitHub
-2. Click **New Project → Deploy from GitHub repo**
-3. Select your repository
-4. Railway uses `nixpacks.toml` to run `npm run build` then `node server.js` automatically
+1. Go to [render.com](https://render.com) and sign in with GitHub
+2. Click **New → Web Service**
+3. Connect your GitHub repository
+4. Render will auto-detect `render.yaml` — confirm the settings:
+   - **Build command:** `npm install && npm run build`
+   - **Start command:** `node server.js`
+   - **Environment:** Node
 
 ### Step 3 — Set environment variables
 
-In Railway dashboard → your service → **Variables**:
+In Render dashboard → your service → **Environment**:
 
 | Key | Value | Required |
 |---|---|---|
 | `NODE_ENV` | `production` | Yes |
-| `NEXT_PUBLIC_SOCKET_URL` | `https://your-app.up.railway.app` | Yes |
+| `NEXT_PUBLIC_SOCKET_URL` | `https://your-app.onrender.com` | Yes |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | `G-XXXXXXXXXX` | Optional — Google Analytics |
 | `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | your Search Console token | Optional — SEO |
 
-> `PORT` is injected automatically by Railway — do not set it manually.
+> `PORT` is injected automatically by Render — do not set it manually.
 
 ### Step 4 — Get your URL and redeploy
 
-Railway gives you a public URL like `https://your-app.up.railway.app`.
+Render gives you a URL like `https://your-app.onrender.com`.
 
-Update `NEXT_PUBLIC_SOCKET_URL` to match that URL, then click **Redeploy** in the Railway dashboard (or push a new commit).
+Update `NEXT_PUBLIC_SOCKET_URL` to match that URL, then trigger a redeploy (or push a new commit).
+
+> **Note:** On Render's free tier, the service spins down after 15 minutes of inactivity. The first request after sleep takes ~30 seconds to wake up. Upgrade to a paid instance to avoid this.
 
 Your app is live.
 

@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /room/
 
-Sitemap: https://ctrl-c-ctrl-v.up.railway.app/sitemap.xml
+Sitemap: https://ctrl-c-ctrl-v.onrender.com/sitemap.xml
