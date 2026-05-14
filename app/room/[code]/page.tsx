@@ -118,6 +118,10 @@ export default function RoomPage({ params, searchParams }: { params: Promise<{ c
     socket.on("user_left", ({ username: who }: { username: string }) => {
       addToast(`${who} left`, "leave");
     });
+
+    socket.on("rate_limited", () => {
+      addToast("Slow down — too many posts.", "info");
+    });
   }
 
   useEffect(() => {
@@ -142,6 +146,7 @@ export default function RoomPage({ params, searchParams }: { params: Promise<{ c
       socket.off("room_not_found");
       socket.off("user_joined");
       socket.off("user_left");
+      socket.off("rate_limited");
     };
   }, []);
 
