@@ -61,6 +61,14 @@ function roomExists(code) {
 app.prepare().then(() => {
   const httpServer = createServer((req, res) => {
     const parsedUrl = parse(req.url, true);
+
+    // Health check endpoint for uptime monitoring
+    if (parsedUrl.pathname === "/health") {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ status: "ok", uptime: process.uptime() }));
+      return;
+    }
+
     handle(req, res, parsedUrl);
   });
 
